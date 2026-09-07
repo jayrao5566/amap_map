@@ -40,7 +40,8 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     if (channel == null) {
       channel = MethodChannel('amap_map_$mapId');
       channel.setMethodCallHandler(
-          (MethodCall call) => _handleMethodCall(call, mapId));
+        (MethodCall call) => _handleMethodCall(call, mapId),
+      );
       _channels[mapId] = channel;
     }
     return channel.invokeMethod<void>('map#waitForMap');
@@ -51,12 +52,9 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     Map<String, dynamic> newOptions, {
     required int mapId,
   }) {
-    return channel(mapId).invokeMethod<void>(
-      'map#update',
-      <String, dynamic>{
-        'options': newOptions,
-      },
-    );
+    return channel(mapId).invokeMethod<void>('map#update', <String, dynamic>{
+      'options': newOptions,
+    });
   }
 
   /// 更新Marker的数据
@@ -64,10 +62,8 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     MarkerUpdates markerUpdates, {
     required int mapId,
   }) {
-    return channel(mapId).invokeMethod<void>(
-      'markers#update',
-      markerUpdates.toMap(),
-    );
+    return channel(mapId)
+        .invokeMethod<void>('markers#update', markerUpdates.toMap());
   }
 
   /// 更新polyline的数据
@@ -75,10 +71,8 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     PolylineUpdates polylineUpdates, {
     required int mapId,
   }) {
-    return channel(mapId).invokeMethod<void>(
-      'polylines#update',
-      polylineUpdates.toMap(),
-    );
+    return channel(mapId)
+        .invokeMethod<void>('polylines#update', polylineUpdates.toMap());
   }
 
   /// 更新polygon的数据
@@ -86,10 +80,8 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     PolygonUpdates polygonUpdates, {
     required int mapId,
   }) {
-    return channel(mapId).invokeMethod<void>(
-      'polygons#update',
-      polygonUpdates.toMap(),
-    );
+    return channel(mapId)
+        .invokeMethod<void>('polygons#update', polygonUpdates.toMap());
   }
 
   @override
@@ -101,9 +93,10 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
 
   @override
   Widget buildView(
-      Map<String, dynamic> creationParams,
-      Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
-      void Function(int id) onPlatformViewCreated) {
+    Map<String, dynamic> creationParams,
+    Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
+    void Function(int id) onPlatformViewCreated,
+  ) {
     if (defaultTargetPlatform == TargetPlatform.android) {
       creationParams['debugMode'] = kDebugMode;
       return AndroidView(
@@ -130,9 +123,9 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
       StreamController<MapEvent<dynamic>>.broadcast();
 
   // 根据mapid返回相应的event.
-  Stream<MapEvent<dynamic>> _events(int mapId) =>
-      _mapEventStreamController.stream
-          .where((MapEvent<dynamic> event) => event.mapId == mapId);
+  Stream<MapEvent<dynamic>> _events(int mapId) => _mapEventStreamController
+      .stream
+      .where((MapEvent<dynamic> event) => event.mapId == mapId);
 
   //定位回调
   Stream<LocationChangedEvent> onLocationChanged({required int mapId}) {
@@ -182,8 +175,12 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     switch (call.method) {
       case 'location#changed':
         try {
-          _mapEventStreamController.add(LocationChangedEvent(
-              mapId, AMapLocation.fromMap(call.arguments['location'])!));
+          _mapEventStreamController.add(
+            LocationChangedEvent(
+              mapId,
+              AMapLocation.fromMap(call.arguments['location'])!,
+            ),
+          );
         } catch (e) {
           print("location#changed error=======>$e");
         }
@@ -191,49 +188,63 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
 
       case 'camera#onMove':
         try {
-          _mapEventStreamController.add(CameraMoveEvent(
-              mapId, CameraPosition.fromMap(call.arguments['position'])!));
+          _mapEventStreamController.add(
+            CameraMoveEvent(
+              mapId,
+              CameraPosition.fromMap(call.arguments['position'])!,
+            ),
+          );
         } catch (e) {
           print("camera#onMove error===>$e");
         }
         break;
       case 'camera#onMoveEnd':
         try {
-          _mapEventStreamController.add(CameraMoveEndEvent(
-              mapId, CameraPosition.fromMap(call.arguments['position'])!));
+          _mapEventStreamController.add(
+            CameraMoveEndEvent(
+              mapId,
+              CameraPosition.fromMap(call.arguments['position'])!,
+            ),
+          );
         } catch (e) {
           print("camera#onMoveEnd error===>$e");
         }
         break;
       case 'map#onTap':
         _mapEventStreamController.add(
-            MapTapEvent(mapId, LatLng.fromJson(call.arguments['latLng'])!));
+          MapTapEvent(mapId, LatLng.fromJson(call.arguments['latLng'])!),
+        );
         break;
       case 'map#onLongPress':
-        _mapEventStreamController.add(MapLongPressEvent(
-            mapId, LatLng.fromJson(call.arguments['latLng'])!));
+        _mapEventStreamController.add(
+          MapLongPressEvent(mapId, LatLng.fromJson(call.arguments['latLng'])!),
+        );
         break;
 
       case 'marker#onTap':
-        _mapEventStreamController.add(MarkerTapEvent(
-          mapId,
-          call.arguments['markerId'],
-        ));
+        _mapEventStreamController.add(
+          MarkerTapEvent(mapId, call.arguments['markerId']),
+        );
         break;
       case 'marker#onDragEnd':
-        _mapEventStreamController.add(MarkerDragEndEvent(
+        _mapEventStreamController.add(
+          MarkerDragEndEvent(
             mapId,
             LatLng.fromJson(call.arguments['position'])!,
-            call.arguments['markerId']));
+            call.arguments['markerId'],
+          ),
+        );
         break;
       case 'polyline#onTap':
-        _mapEventStreamController
-            .add(PolylineTapEvent(mapId, call.arguments['polylineId']));
+        _mapEventStreamController.add(
+          PolylineTapEvent(mapId, call.arguments['polylineId']),
+        );
         break;
       case 'map#onPoiTouched':
         try {
-          _mapEventStreamController.add(MapPoiTouchEvent(
-              mapId, AMapPoi.fromJson(call.arguments['poi'])!));
+          _mapEventStreamController.add(
+            MapPoiTouchEvent(mapId, AMapPoi.fromJson(call.arguments['poi'])!),
+          );
         } catch (e) {
           print('map#onPoiTouched error===>$e');
         }
@@ -251,20 +262,16 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     return channel(mapId).invokeMethod<void>('camera#move', <String, dynamic>{
       'cameraUpdate': cameraUpdate.toJson(),
       'animated': animated,
-      'duration': duration
+      'duration': duration,
     });
   }
 
   ///截屏
-  Future<Uint8List?> takeSnapshot({
-    required int mapId,
-  }) {
+  Future<Uint8List?> takeSnapshot({required int mapId}) {
     return channel(mapId).invokeMethod<Uint8List>('map#takeSnapshot');
   }
 
-  Future<void> clearDisk({
-    required int mapId,
-  }) {
+  Future<void> clearDisk({required int mapId}) {
     return channel(mapId).invokeMethod<void>('map#clearDisk');
   }
 
@@ -272,9 +279,9 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     LatLng latLng, {
     required int mapId,
   }) async {
-    final Map<String, int>? point = await channel(mapId)
-        .invokeMapMethod<String, int>(
-            'map#toScreenCoordinate', latLng.toJson());
+    final Map<String, int>? point = await channel(
+      mapId,
+    ).invokeMapMethod<String, int>('map#toScreenCoordinate', latLng.toJson());
     return ScreenCoordinate(x: point!['x']!, y: point['y']!);
   }
 
@@ -284,21 +291,42 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
   }) async {
     final List<dynamic>? latLng = await channel(mapId)
         .invokeMethod<List<dynamic>>(
-            'map#fromScreenCoordinate', screenCoordinate.toJson());
+          'map#fromScreenCoordinate',
+          screenCoordinate.toJson(),
+        );
     return LatLng(latLng![0] as double, latLng[1] as double);
   }
 
-  Future<String> getMapContentApprovalNumber({
+  Future<LatLngBounds> getVisibleMapBounds({required int mapId}) async {
+    final List<dynamic>? bounds = await channel(mapId)
+        .invokeMethod<List<dynamic>>('map#getVisibleMapBounds');
+    if (bounds == null || bounds.length != 2) {
+      throw StateError('The native map returned invalid visible bounds.');
+    }
+    final LatLng? southwest = LatLng.fromJson(bounds[0]);
+    final LatLng? northeast = LatLng.fromJson(bounds[1]);
+    if (southwest == null || northeast == null) {
+      throw StateError('The native map returned invalid visible bounds.');
+    }
+    return LatLngBounds(southwest: southwest, northeast: northeast);
+  }
+
+  Future<PoiSearchResult> searchPoi(
+    PoiSearchQuery query, {
     required int mapId,
   }) async {
+    final Map<Object?, Object?>? result = await channel(mapId)
+        .invokeMethod<Map<Object?, Object?>>('poi#search', query.toMap());
+    return PoiSearchResult.fromMap(result);
+  }
+
+  Future<String> getMapContentApprovalNumber({required int mapId}) async {
     return await channel(mapId)
             .invokeMethod<String>('map#contentApprovalNumber') ??
         '';
   }
 
-  Future<String> getSatelliteImageApprovalNumber({
-    required int mapId,
-  }) async {
+  Future<String> getSatelliteImageApprovalNumber({required int mapId}) async {
     return await channel(mapId)
             .invokeMethod<String>('map#satelliteImageApprovalNumber') ??
         '';

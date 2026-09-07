@@ -14,6 +14,7 @@ import com.amap.api.maps.AMapOptions;
 import com.amap.api.maps.TextureMapView;
 import com.amap.flutter.map.core.MapController;
 import com.amap.flutter.map.core.MapsInitializerController;
+import com.amap.flutter.map.core.PoiSearchController;
 import com.amap.flutter.map.overlays.marker.MarkersController;
 import com.amap.flutter.map.overlays.polygon.PolygonsController;
 import com.amap.flutter.map.overlays.polyline.PolylinesController;
@@ -51,6 +52,7 @@ public class AMapPlatformView
     private MarkersController markersController;
     private PolylinesController polylinesController;
     private PolygonsController polygonsController;
+    private PoiSearchController poiSearchController;
     private TextureMapView mapView;
     private boolean disposed = false;
 
@@ -72,6 +74,7 @@ public class AMapPlatformView
             markersController = new MarkersController(methodChannel, amap);
             polylinesController = new PolylinesController(methodChannel, amap);
             polygonsController = new PolygonsController(methodChannel, amap);
+            poiSearchController = new PoiSearchController(context);
             initMyMethodCallHandlerMap();
             lifecycleProvider.getLifecycle().addObserver(this);
         } catch (Throwable e) {
@@ -112,6 +115,13 @@ public class AMapPlatformView
         if (null != methodIdArray) {
             for (String methodId : methodIdArray) {
                 myMethodCallHandlerMap.put(methodId, polygonsController);
+            }
+        }
+
+        methodIdArray = poiSearchController.getRegisterMethodIdArray();
+        if (null != methodIdArray) {
+            for (String methodId : methodIdArray) {
+                myMethodCallHandlerMap.put(methodId, poiSearchController);
             }
         }
     }
@@ -254,6 +264,7 @@ public class AMapPlatformView
                 return;
             }
             methodChannel.setMethodCallHandler(null);
+            poiSearchController.dispose();
             destroyMapViewIfNecessary();
             disposed = true;
         } catch (Throwable e) {

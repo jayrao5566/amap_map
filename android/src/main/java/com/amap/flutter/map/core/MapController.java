@@ -16,6 +16,7 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.LatLngBounds;
 import com.amap.api.maps.model.MyLocationStyle;
 import com.amap.api.maps.model.Poi;
+import com.amap.api.maps.model.VisibleRegion;
 import com.amap.flutter.map.MyMethodCallHandler;
 import com.amap.flutter.map.utils.Const;
 import com.amap.flutter.map.utils.ConvertUtil;
@@ -136,6 +137,17 @@ public class MapController
                 Point argPoint = ConvertUtil.pointFromMap(call.arguments);
                 LatLng resLatLng = amap.getProjection().fromScreenLocation(argPoint);
                 result.success(ConvertUtil.latLngToList(resLatLng));
+                break;
+            case Const.METHOD_MAP_GET_VISIBLE_MAP_BOUNDS:
+                VisibleRegion visibleRegion = amap.getProjection().getVisibleRegion();
+                if (visibleRegion == null || visibleRegion.latLngBounds == null) {
+                    result.error("visible_bounds_unavailable", "Visible map bounds are unavailable.", null);
+                    break;
+                }
+                final java.util.List<Object> visibleBounds = new java.util.ArrayList<Object>(2);
+                visibleBounds.add(ConvertUtil.latLngToList(visibleRegion.latLngBounds.southwest));
+                visibleBounds.add(ConvertUtil.latLngToList(visibleRegion.latLngBounds.northeast));
+                result.success(visibleBounds);
                 break;
             default:
                 LogUtil.w(CLASS_NAME, "onMethodCall not find methodId:" + call.method);

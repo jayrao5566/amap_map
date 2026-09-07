@@ -19,6 +19,7 @@ export 'polyline.dart';
 export 'polyline_updates.dart';
 export 'polygon.dart';
 export 'polygon_updates.dart';
+export 'poi_search.dart';
 export 'bitmap.dart';
 export 'screen_coordinate.dart';
 export 'info_window_adapter.dart';

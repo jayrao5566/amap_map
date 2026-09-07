@@ -20,8 +20,11 @@ class AMapController {
   final int mapId;
   final _MapState _mapState;
 
-  AMapController._(CameraPosition initCameraPosition, this._mapState,
-      {required this.mapId}) {
+  AMapController._(
+    CameraPosition initCameraPosition,
+    this._mapState, {
+    required this.mapId,
+  }) {
     _connectStreams(mapId);
   }
 
@@ -33,11 +36,7 @@ class AMapController {
     dynamic mapState,
   ) async {
     await _methodChannel.init(id);
-    return AMapController._(
-      initialCameration,
-      mapState,
-      mapId: id,
-    );
+    return AMapController._(initialCameration, mapState, mapId: id);
   }
 
   ///只用于测试
@@ -48,9 +47,12 @@ class AMapController {
   }
 
   void _connectStreams(int mapId) {
-    _methodChannel.onLocationChanged(mapId: mapId).listen(
-        (LocationChangedEvent e) =>
-            _mapState.widget.onLocationChanged?.call(e.value));
+    _methodChannel
+        .onLocationChanged(mapId: mapId)
+        .listen(
+          (LocationChangedEvent e) =>
+              _mapState.widget.onLocationChanged?.call(e.value),
+        );
 
     _methodChannel.onCameraMove(mapId: mapId).listen((CameraMoveEvent e) {
       _mapState.widget.onCameraMove?.call(e.value);
@@ -115,10 +117,17 @@ class AMapController {
   ///可选属性[animated]用于控制是否执行动画移动
   ///
   ///可选属性[duration]用于控制执行动画的时长,默认250毫秒,单位:毫秒
-  Future<void> moveCamera(CameraUpdate cameraUpdate,
-      {bool animated = true, int duration = 250}) {
-    return _methodChannel.moveCamera(cameraUpdate,
-        mapId: mapId, animated: animated, duration: duration);
+  Future<void> moveCamera(
+    CameraUpdate cameraUpdate, {
+    bool animated = true,
+    int duration = 250,
+  }) {
+    return _methodChannel.moveCamera(
+      cameraUpdate,
+      mapId: mapId,
+      animated: animated,
+      duration: duration,
+    );
   }
 
   ///地图截屏
@@ -139,6 +148,16 @@ class AMapController {
   /// 屏幕坐标转经纬度 From v1.0.3
   Future<LatLng> fromScreenCoordinate(ScreenCoordinate screenCoordinate) {
     return _methodChannel.fromScreenLocation(screenCoordinate, mapId: mapId);
+  }
+
+  /// Returns the geographic bounds currently visible in the native map view.
+  Future<LatLngBounds> getVisibleMapBounds() {
+    return _methodChannel.getVisibleMapBounds(mapId: mapId);
+  }
+
+  /// Searches for POIs by keyword using the native AMap search SDK.
+  Future<PoiSearchResult> searchPoi(PoiSearchQuery query) {
+    return _methodChannel.searchPoi(query, mapId: mapId);
   }
 
   Future<String> getMapContentApprovalNumber() {

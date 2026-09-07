@@ -1,39 +1,38 @@
 PODS:
-  - AMap3DMap (10.1.200):
-    - AMapFoundation (>= 1.8.0)
-  - amap_map (1.0.8):
+  - AMap3DMap (11.2.100):
+    - AMapFoundation (>= 1.9.0)
+  - amap_map (1.0.0):
     - AMap3DMap
+    - AMapSearch (= 9.8.1)
     - Flutter
-  - AMapFoundation (1.8.2)
+  - AMapFoundation (1.9.1)
+  - AMapSearch (9.8.1):
+    - AMapFoundation (>= 1.9.0)
   - Flutter (1.0.0)
-  - permission_handler_apple (9.3.0):
-    - Flutter
 
 DEPENDENCIES:
   - amap_map (from `.symlinks/plugins/amap_map/ios`)
   - Flutter (from `Flutter`)
-  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 SPEC REPOS:
   trunk:
     - AMap3DMap
     - AMapFoundation
+    - AMapSearch
 
 EXTERNAL SOURCES:
   amap_map:
     :path: ".symlinks/plugins/amap_map/ios"
   Flutter:
     :path: Flutter
-  permission_handler_apple:
-    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
-  AMap3DMap: 220e48934bc6553a15251c8c86f581a802787506
-  amap_map: 5be213f350872f6ea406be964031572ab9a0d6e1
-  AMapFoundation: 9885c48fc3a78fdfb84a0299a2293e56ea3c9fec
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  AMap3DMap: 4718171fccb20e827d48ce9cefb20d67f35441f1
+  amap_map: 81f90145be5213797bf9c062009845d4108a2f5d
+  AMapFoundation: 8c511ce0584873bc6febb071365b2bfd62ce4a11
+  AMapSearch: bbbaa101ed94f3b51ab3a867d030a5336555138e
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
 
-PODFILE CHECKSUM: cf0c950f7e9a456b4e325f5b8fc0f98906a3705a
+PODFILE CHECKSUM: 5e6838852cb965046aea7206d2801f7cad357e2d
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

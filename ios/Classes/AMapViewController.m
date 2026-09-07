@@ -26,6 +26,135 @@
 #import "AMapJsonUtils.h"
 #import "AMapConvertUtil.h"
 #import "FlutterMethodChannel+MethodCallDispatch.h"
+#import <AMapSearchKit/AMapSearchKit.h>
+
+@interface AMapPoiSearchHandler : NSObject<AMapSearchDelegate>
+
+- (instancetype)initWithResult:(FlutterResult)result
+                     completion:(void (^)(AMapPoiSearchHandler *handler))completion;
+- (void)searchWithParameters:(NSDictionary *)parameters;
+- (void)cancel;
+
+@end
+
+@interface AMapPoiSearchHandler ()
+
+@property (nonatomic, strong) AMapSearchAPI *searchApi;
+@property (nonatomic, copy) FlutterResult result;
+@property (nonatomic, copy) void (^completion)(AMapPoiSearchHandler *handler);
+@property (nonatomic, assign) BOOL completed;
+
+@end
+
+@implementation AMapPoiSearchHandler
+
+- (instancetype)initWithResult:(FlutterResult)result
+                     completion:(void (^)(AMapPoiSearchHandler *handler))completion {
+    self = [super init];
+    if (self) {
+        _result = [result copy];
+        _completion = [completion copy];
+    }
+    return self;
+}
+
+- (void)searchWithParameters:(NSDictionary *)parameters {
+    NSString *keyword = parameters[@"keyword"];
+    if (![keyword isKindOfClass:[NSString class]] || keyword.length == 0) {
+        [self finishWithValue:[FlutterError errorWithCode:@"invalid_argument"
+                                                  message:@"keyword must not be empty."
+                                                  details:nil]];
+        return;
+    }
+
+    NSInteger page = [parameters[@"page"] integerValue];
+    NSInteger pageSize = [parameters[@"pageSize"] integerValue];
+    if (page == 0) {
+        page = 1;
+    }
+    if (pageSize == 0) {
+        pageSize = 20;
+    }
+    if (page < 1 || page > 100 || pageSize < 1 || pageSize > 25) {
+        [self finishWithValue:[FlutterError errorWithCode:@"invalid_argument"
+                                                  message:@"page must be 1-100 and pageSize must be 1-25."
+                                                  details:nil]];
+        return;
+    }
+
+    AMapPOIKeywordsSearchRequest *request = [[AMapPOIKeywordsSearchRequest alloc] init];
+    request.keywords = keyword;
+    request.city = [parameters[@"city"] isKindOfClass:[NSString class]] ? parameters[@"city"] : nil;
+    request.types = [parameters[@"types"] isKindOfClass:[NSString class]] ? parameters[@"types"] : nil;
+    request.page = page;
+    request.offset = pageSize;
+    request.cityLimit = [parameters[@"cityLimit"] boolValue];
+
+    self.searchApi = [[AMapSearchAPI alloc] init];
+    self.searchApi.delegate = self;
+    [self.searchApi AMapPOIKeywordsSearch:request];
+}
+
+- (void)cancel {
+    self.completed = YES;
+    self.searchApi.delegate = nil;
+    [self.searchApi cancelAllRequests];
+    self.result = nil;
+    self.completion = nil;
+}
+
+- (void)AMapSearchRequest:(id)request didFailWithError:(NSError *)error {
+    [self finishWithValue:[FlutterError errorWithCode:@"amap_poi_search"
+                                              message:error.localizedDescription ?: @"AMap POI search failed."
+                                              details:@{ @"code": @(error.code) }]];
+}
+
+- (void)onPOISearchDone:(AMapPOISearchBaseRequest *)request response:(AMapPOISearchResponse *)response {
+    NSMutableArray<NSDictionary *> *pois = [[NSMutableArray alloc] init];
+    for (AMapPOI *poi in response.pois ?: @[]) {
+        NSMutableDictionary *item = [[NSMutableDictionary alloc] init];
+        [self addValue:poi.uid forKey:@"id" toDictionary:item];
+        [self addValue:poi.name forKey:@"name" toDictionary:item];
+        [self addValue:poi.address forKey:@"address" toDictionary:item];
+        [self addValue:poi.type forKey:@"type" toDictionary:item];
+        [self addValue:poi.typecode forKey:@"typeCode" toDictionary:item];
+        [self addValue:poi.province forKey:@"province" toDictionary:item];
+        [self addValue:poi.city forKey:@"city" toDictionary:item];
+        [self addValue:poi.district forKey:@"district" toDictionary:item];
+        [self addValue:poi.adcode forKey:@"adCode" toDictionary:item];
+        if (poi.location != nil) {
+            item[@"latLng"] = @[ @(poi.location.latitude), @(poi.location.longitude) ];
+        }
+        [pois addObject:item];
+    }
+    [self finishWithValue:@{ @"count": @(response.count), @"pois": pois }];
+}
+
+- (void)addValue:(id)value forKey:(NSString *)key toDictionary:(NSMutableDictionary *)dictionary {
+    if (value != nil) {
+        dictionary[key] = value;
+    }
+}
+
+- (void)finishWithValue:(id)value {
+    if (self.completed) {
+        return;
+    }
+    self.completed = YES;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.result != nil) {
+            self.result(value);
+        }
+        if (self.completion != nil) {
+            self.completion(self);
+        }
+        self.result = nil;
+        self.completion = nil;
+        self.searchApi.delegate = nil;
+    });
+}
+
+@end
 
 @interface AMapViewController ()<MAMapViewDelegate>
 
@@ -37,6 +166,7 @@
 @property (nonatomic,strong) AMapMarkerController *markerController;
 @property (nonatomic,strong) AMapPolylineController *polylinesController;
 @property (nonatomic,strong) AMapPolygonController *polygonsController;
+@property (nonatomic,strong) NSMutableSet<AMapPoiSearchHandler *> *poiSearchHandlers;
 
 @property (nonatomic,copy) FlutterResult waitForMapCallBack;//waitForMap的回调，仅当地图没有加载完成时缓存使用
 @property (nonatomic,assign) BOOL mapInitCompleted;//地图初始化完成，首帧回调的标记
@@ -106,6 +236,7 @@
         _polygonsController = [[AMapPolygonController alloc] init:_channel
                                                           mapView:_mapView
                                                         registrar:registrar];
+        _poiSearchHandlers = [[NSMutableSet alloc] init];
         id markersToAdd = args[@"markersToAdd"];
         if ([markersToAdd isKindOfClass:[NSArray class]]) {
             [_markerController addMarkers:markersToAdd];
@@ -129,6 +260,9 @@
 }
 
 - (void)dealloc {
+    for (AMapPoiSearchHandler *handler in [_poiSearchHandlers copy]) {
+        [handler cancel];
+    }
     if (MAMapRectIsEmpty(_initLimitMapRect) == NO) {//避免没有开始渲染，frame监听还存在时，快速销毁
         [_mapView removeObserver:self forKeyPath:@"frame"];
     }
@@ -243,6 +377,39 @@
         CGPoint point = [AMapConvertUtil pointFromDictionary:call.arguments];
         CLLocationCoordinate2D coordinate = [weakSelf.mapView convertPoint:point toCoordinateFromView:weakSelf.mapView];
         result([AMapConvertUtil arrayFromLocation:coordinate]);
+    }];
+    [self.channel addMethodName:@"map#getVisibleMapBounds" withHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
+        CGRect bounds = weakSelf.mapView.bounds;
+        NSArray<NSValue *> *cornerPoints = @[
+            [NSValue valueWithCGPoint:CGPointMake(CGRectGetMinX(bounds), CGRectGetMinY(bounds))],
+            [NSValue valueWithCGPoint:CGPointMake(CGRectGetMaxX(bounds), CGRectGetMinY(bounds))],
+            [NSValue valueWithCGPoint:CGPointMake(CGRectGetMinX(bounds), CGRectGetMaxY(bounds))],
+            [NSValue valueWithCGPoint:CGPointMake(CGRectGetMaxX(bounds), CGRectGetMaxY(bounds))],
+        ];
+        CLLocationDegrees minLatitude = 90.0;
+        CLLocationDegrees maxLatitude = -90.0;
+        CLLocationDegrees minLongitude = 180.0;
+        CLLocationDegrees maxLongitude = -180.0;
+        for (NSValue *value in cornerPoints) {
+            CLLocationCoordinate2D coordinate = [weakSelf.mapView convertPoint:value.CGPointValue toCoordinateFromView:weakSelf.mapView];
+            minLatitude = MIN(minLatitude, coordinate.latitude);
+            maxLatitude = MAX(maxLatitude, coordinate.latitude);
+            minLongitude = MIN(minLongitude, coordinate.longitude);
+            maxLongitude = MAX(maxLongitude, coordinate.longitude);
+        }
+        result(@[@[@(minLatitude), @(minLongitude)], @[@(maxLatitude), @(maxLongitude)]]);
+    }];
+    [self.channel addMethodName:@"poi#search" withHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
+        if (weakSelf == nil) {
+            result([FlutterError errorWithCode:@"map_disposed" message:@"The map view has been disposed." details:nil]);
+            return;
+        }
+        NSDictionary *parameters = [call.arguments isKindOfClass:[NSDictionary class]] ? call.arguments : @{};
+        AMapPoiSearchHandler *handler = [[AMapPoiSearchHandler alloc] initWithResult:result completion:^(AMapPoiSearchHandler *completedHandler) {
+            [weakSelf.poiSearchHandlers removeObject:completedHandler];
+        }];
+        [weakSelf.poiSearchHandlers addObject:handler];
+        [handler searchWithParameters:parameters];
     }];
 }
 

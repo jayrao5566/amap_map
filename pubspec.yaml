@@ -1,8 +1,8 @@
 name: amap_map
 description: Amap SDK Flutter plugin for integrating AMapSDK in iOS and Android applications.
-version: 1.0.15
-homepage: https://github.com/kuloud/amap_map
-issue_tracker: https://github.com/kuloud/amap_map/issues
+version: 1.0.0
+homepage: https://github.com/jayrao5566/amap_map.git
+issue_tracker: https://github.com/jayrao5566/amap_map.git/issues
 platforms:
   android:
   ios:
@@ -12,21 +12,24 @@ topics:
   - flutter
 
 environment:
-  sdk: ">=3.1.5 <4.0.0"
+  sdk: ">=3.13.2"
   flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_plugin_android_lifecycle: ^2.0.21
+  flutter_plugin_android_lifecycle: ^2.0.35
   plugin_platform_interface: ^2.1.8
-  stream_transform: ^2.0.0
-
-  x_amap_base: ^1.0.3
-  x_common: ^1.0.4
+  stream_transform: ^2.1.1
+  x_amap_base: 1.0.3
+  fluster:
+    git:
+      url: https://github.com/jayrao5566/fluster.git
+      ref: e63b03352775d31353c0322e62666dbdbbb685fa
+  # x_common: ^1.0.4
 
 dev_dependencies:
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 
