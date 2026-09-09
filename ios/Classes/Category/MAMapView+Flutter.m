@@ -124,8 +124,22 @@
     if (locationStyleDict) {
         BOOL showUserLocation = [locationStyleDict[@"enabled"] boolValue];
         self.showsUserLocation = showUserLocation;
+        NSInteger trackingMode = [locationStyleDict[@"trackingMode"] integerValue];
+        MAUserTrackingMode nativeTrackingMode = MAUserTrackingModeNone;
+        switch (trackingMode) {
+            case 1:
+                nativeTrackingMode = MAUserTrackingModeFollow;
+                break;
+            case 2:
+                nativeTrackingMode = MAUserTrackingModeFollowWithHeading;
+                break;
+            case 0:
+            default:
+                nativeTrackingMode = MAUserTrackingModeNone;
+                break;
+        }
+        self.userTrackingMode = showUserLocation ? nativeTrackingMode : MAUserTrackingModeNone;
         if (showUserLocation) {
-            self.userTrackingMode = MAUserTrackingModeNone;//强制设置为非追随模式，追随模式后续在demo中，使用自定义定位样式实现
             if (locationStyleDict[@"circleFillColor"] != nil
                 || locationStyleDict[@"circleStrokeColor"] != nil
                 || locationStyleDict[@"circleStrokeWidth"] != nil

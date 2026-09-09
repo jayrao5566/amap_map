@@ -108,6 +108,22 @@ class MinMaxZoomPreference {
   }
 }
 
+/// Native user-location tracking behavior.
+///
+/// On Android, the modes map to `FOLLOW_NO_CENTER`, `FOLLOW`, and
+/// `LOCATION_ROTATE`. On iOS, they map to `None`, `Follow`, and
+/// `FollowWithHeading`.
+enum AMapUserTrackingMode {
+  /// Shows the location indicator without moving or rotating the map.
+  none,
+
+  /// Keeps the current location centered on the map.
+  follow,
+
+  /// Keeps the current location centered and rotates the map by heading.
+  followWithHeading,
+}
+
 ///定位小蓝点配置项
 class MyLocationStyleOptions {
   ///是否显示定位小蓝点
@@ -125,12 +141,16 @@ class MyLocationStyleOptions {
   ///小蓝点图标
   BitmapDescriptor? icon;
 
+  /// 用户位置的原生跟随模式，默认只显示蓝点而不移动地图。
+  AMapUserTrackingMode trackingMode;
+
   MyLocationStyleOptions(
     this.enabled, {
     this.circleFillColor,
     this.circleStrokeColor,
     this.circleStrokeWidth,
     this.icon,
+    this.trackingMode = AMapUserTrackingMode.none,
   });
 
   MyLocationStyleOptions clone() {
@@ -140,6 +160,7 @@ class MyLocationStyleOptions {
       circleStrokeColor: circleStrokeColor,
       circleStrokeWidth: circleStrokeWidth,
       icon: icon,
+      trackingMode: trackingMode,
     );
   }
 
@@ -153,6 +174,11 @@ class MyLocationStyleOptions {
       circleStrokeColor: json['circleStrokeColor'],
       circleStrokeWidth: json['circleStrokeWidth'],
       icon: json['icon'],
+      trackingMode:
+          AMapUserTrackingMode.values.elementAtOrNull(
+            (json['trackingMode'] as num?)?.toInt() ?? 0,
+          ) ??
+          AMapUserTrackingMode.none,
     );
   }
 
@@ -170,6 +196,7 @@ class MyLocationStyleOptions {
     addIfPresent('circleStrokeColor', circleStrokeColor?.argbValue);
     addIfPresent('circleStrokeWidth', circleStrokeWidth);
     addIfPresent('icon', icon?.toMap());
+    addIfPresent('trackingMode', trackingMode.index);
     return json;
   }
 
@@ -182,7 +209,8 @@ class MyLocationStyleOptions {
     return enabled == typedOther.enabled &&
         circleFillColor == typedOther.circleFillColor &&
         circleStrokeColor == typedOther.circleStrokeColor &&
-        icon == typedOther.icon;
+        icon == typedOther.icon &&
+        trackingMode == typedOther.trackingMode;
   }
 
   @override
@@ -191,12 +219,18 @@ class MyLocationStyleOptions {
         'enabled: $enabled,'
         'circleFillColor: $circleFillColor,'
         'circleStrokeColor: $circleStrokeColor,'
+        'trackingMode: $trackingMode,'
         'icon: $icon, }';
   }
 
   @override
-  int get hashCode => Object.hashAll(
-      <Object?>[enabled, circleFillColor, circleStrokeColor, icon]);
+  int get hashCode => Object.hashAll(<Object?>[
+    enabled,
+    circleFillColor,
+    circleStrokeColor,
+    trackingMode,
+    icon,
+  ]);
 }
 
 ///地图自定义样式

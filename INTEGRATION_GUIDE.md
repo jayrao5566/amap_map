@@ -98,6 +98,19 @@ platform :ios, '15.0'
 
 若应用确实需要后台定位，再按 Apple 审核要求增加对应的 Always 定位说明和能力；普通地图展示不应申请后台定位。
 
+定位样式可选择原生跟随行为：
+
+```dart
+AMapWidget(
+  myLocationStyleOptions: MyLocationStyleOptions(
+    true,
+    trackingMode: AMapUserTrackingMode.followWithHeading,
+  ),
+)
+```
+
+`none`（默认）只显示定位蓝点；`follow` 持续居中当前位置；`followWithHeading` 在居中基础上按行驶朝向旋转地图。iOS 原生 SDK 会在用户拖动地图或业务主动调用相机控制后退出跟随模式；需要恢复时，重新设置相同的 `trackingMode`。
+
 ## 4. Key 和合规初始化
 
 先在高德开放平台创建 Android 与 iOS Key。Android Key 应匹配宿主应用的包名和签名证书，iOS Key 应匹配 Bundle Identifier。

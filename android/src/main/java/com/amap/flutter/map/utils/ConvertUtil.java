@@ -41,7 +41,6 @@ import io.flutter.embedding.engine.loader.FlutterLoader;
 public class ConvertUtil {
 
     private static final String CLASS_NAME = "ConvertUtil";
-    private static final int[] LocationTypeMap = new int[]{MyLocationStyle.LOCATION_TYPE_SHOW, MyLocationStyle.LOCATION_TYPE_FOLLOW, MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE};
     public static float density;
     private static String apiKey;
     private static FlutterLoader flutterLoader;  // For asset loading
@@ -338,15 +337,22 @@ public class ConvertUtil {
         if (null != enableData) {
             myLocationStyle.showMyLocation(toBoolean(enableData));
         }
-        //两端差异比较大，Android端设置成跟随但是不移动到中心点模式，与iOS端兼容
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW_NO_CENTER);
-//        final Object trackingMode = map.get("trackingMode");
-//        if (null != trackingMode) {
-//            int trackingModeIndex = toInt(trackingMode);
-//            if (trackingModeIndex < LocationTypeMap.length) {
-//                myLocationStyle.myLocationType(LocationTypeMap[trackingModeIndex]);
-//            }
-//        }
+        final Object trackingMode = map.get("trackingMode");
+        final int trackingModeIndex = trackingMode == null ? 0 : toInt(trackingMode);
+        switch (trackingModeIndex) {
+            case 1:
+                myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW);
+                break;
+            case 2:
+                myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);
+                break;
+            case 0:
+            default:
+                // Preserve the existing default: show the blue dot without
+                // recentering the map.
+                myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW_NO_CENTER);
+                break;
+        }
 
         final Object circleFillColorData = map.get("circleFillColor");
         if (null != circleFillColorData) {
