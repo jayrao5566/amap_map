@@ -91,6 +91,13 @@ class AMapWidget extends StatefulWidget {
   /// 相机视角移动结束的回调
   final ArgumentCallback<CameraPosition>? onCameraMoveEnd;
 
+  /// 相机视角移动结束的回调，附带原生 SDK 提供的移动原因。
+  ///
+  /// iOS 可区分[AMapCameraMoveReason.gesture]和
+  /// [AMapCameraMoveReason.nonGesture]。Android 暂不提供可靠判断，返回
+  /// [AMapCameraMoveReason.unknown]。
+  final CameraMoveEndWithReasonCallback? onCameraMoveEndWithReason;
+
   /// 地图单击事件的回调
   final ArgumentCallback<LatLng>? onTap;
 
@@ -146,6 +153,7 @@ class AMapWidget extends StatefulWidget {
       this.myLocationStyleOptions,
       this.onCameraMove,
       this.onCameraMoveEnd,
+      this.onCameraMoveEndWithReason,
       this.onLocationChanged,
       this.onTap,
       this.onLongPress,

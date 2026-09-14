@@ -678,15 +678,17 @@
 }
 
 /**
- * @brief 地图区域改变完成后会调用此接口
+ * @brief 地图区域改变完成后会调用此接口，包含 SDK 原生的用户操作标识。
  * @param mapView 地图View
  * @param animated 是否动画
+ * @param wasUserAction 是否由用户手势导致
  */
-- (void)mapView:(MAMapView *)mapView regionDidChangeAnimated:(BOOL)animated {
+- (void)mapView:(MAMapView *)mapView regionDidChangeAnimated:(BOOL)animated wasUserAction:(BOOL)wasUserAction {
     AMapCameraPosition *cameraPos = [mapView getCurrentCameraPosition];
     NSDictionary *dict = [cameraPos toDictionary];
     if (dict) {
-        [_channel invokeMethod:@"camera#onMoveEnd" arguments:@{@"position":dict}];
+        NSString *reason = wasUserAction ? @"gesture" : @"nonGesture";
+        [_channel invokeMethod:@"camera#onMoveEnd" arguments:@{@"position":dict, @"reason":reason}];
     }
 }
 

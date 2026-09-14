@@ -28,7 +28,13 @@ class CameraMoveEvent extends MapEvent<CameraPosition> {
 
 ///地图移动结束回调
 class CameraMoveEndEvent extends MapEvent<CameraPosition> {
-  CameraMoveEndEvent(super.mapId, super.value);
+  CameraMoveEndEvent(
+    super.mapId,
+    super.value, {
+    this.reason = AMapCameraMoveReason.unknown,
+  });
+
+  final AMapCameraMoveReason reason;
 }
 
 ///点击地图回调

@@ -1,5 +1,24 @@
 import 'package:x_amap_base/x_amap_base.dart';
 
+/// Describes whether a completed camera movement was caused by user input.
+enum AMapCameraMoveReason {
+  /// The native map SDK identified a user gesture as the cause.
+  gesture,
+
+  /// The native map SDK identified a non-gesture cause, such as a camera API
+  /// call or native location tracking.
+  nonGesture,
+
+  /// The platform does not expose a reliable movement reason.
+  unknown,
+}
+
+/// Callback for a completed camera movement with its native reason.
+typedef CameraMoveEndWithReasonCallback = void Function(
+  CameraPosition position,
+  AMapCameraMoveReason reason,
+);
+
 /// 相机位置，包含可视区域的位置参数。
 class CameraPosition {
   /// 构造一个CameraPosition 对象

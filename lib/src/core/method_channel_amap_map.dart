@@ -204,6 +204,9 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
             CameraMoveEndEvent(
               mapId,
               CameraPosition.fromMap(call.arguments['position'])!,
+              reason: _cameraMoveReasonFromPlatformValue(
+                call.arguments['reason'],
+              ),
             ),
           );
         } catch (e) {
@@ -250,6 +253,16 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
         }
         break;
     }
+  }
+
+  AMapCameraMoveReason _cameraMoveReasonFromPlatformValue(dynamic value) {
+    if (value == 'gesture') {
+      return AMapCameraMoveReason.gesture;
+    }
+    if (value == 'nonGesture') {
+      return AMapCameraMoveReason.nonGesture;
+    }
+    return AMapCameraMoveReason.unknown;
   }
 
   /// 移动镜头到一个新的位置

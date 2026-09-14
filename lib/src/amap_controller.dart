@@ -63,6 +63,7 @@ class AMapController {
 
     _methodChannel.onCameraMoveEnd(mapId: mapId).listen((CameraMoveEndEvent e) {
       _mapState.widget.onCameraMoveEnd?.call(e.value);
+      _mapState.widget.onCameraMoveEndWithReason?.call(e.value, e.reason);
     });
     _methodChannel
         .onMapTap(mapId: mapId)

@@ -312,6 +312,9 @@ public class MapController
         if (null != methodChannel) {
             final Map<String, Object> arguments = new HashMap<String, Object>(2);
             arguments.put("position", ConvertUtil.cameraPositionToMap(cameraPosition));
+            // TODO(android): AMap's camera callback does not expose a movement
+            // reason. Add AMapGestureListener-based gesture tracking before
+            // reporting a reason; until then Dart receives `unknown`.
             methodChannel.invokeMethod("camera#onMoveEnd", arguments);
             LogUtil.i(CLASS_NAME, "onCameraChangeFinish===>" + arguments);
         }

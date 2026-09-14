@@ -119,6 +119,19 @@ await controller.updateLocationData(const LatLng(31.2304, 121.4737));
 
 通常在 `onMapCreated` 中读取业务侧持久化的上次坐标后调用。坐标必须是高德 GCJ-02，且 `myLocationStyleOptions.enabled` 必须为 `true`。该调用只刷新原生蓝点，不触发 `onLocationChanged`；高德真实定位回调到达后会覆盖缓存位置。
 
+如需只响应用户手势导致的相机变化，可使用：
+
+```dart
+AMapWidget(
+  onCameraMoveEndWithReason: (position, reason) {
+    if (reason != AMapCameraMoveReason.gesture) return;
+    // 用户拖动、缩放或旋转地图后更新业务查询范围。
+  },
+)
+```
+
+iOS 使用高德原生 `wasUserAction` 判断；Android 目前返回 `unknown`，不应据此作业务过滤。
+
 ## 4. Key 和合规初始化
 
 先在高德开放平台创建 Android 与 iOS Key。Android Key 应匹配宿主应用的包名和签名证书，iOS Key 应匹配 Bundle Identifier。
