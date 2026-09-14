@@ -155,6 +155,12 @@ class AMapController {
     return _methodChannel.getVisibleMapBounds(mapId: mapId);
   }
 
+  /// Updates the native location blue dot with a cached GCJ-02 coordinate.
+  /// This does not emit [AMapWidget.onLocationChanged].
+  Future<void> updateLocationData(LatLng latLng) {
+    return _methodChannel.updateLocationData(latLng, mapId: mapId);
+  }
+
   /// Searches for POIs by keyword using the native AMap search SDK.
   Future<PoiSearchResult> searchPoi(PoiSearchQuery query) {
     return _methodChannel.searchPoi(query, mapId: mapId);

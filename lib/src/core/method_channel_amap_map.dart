@@ -311,6 +311,14 @@ class MethodChannelAMapFlutterMap implements AMapFlutterPlatform {
     return LatLngBounds(southwest: southwest, northeast: northeast);
   }
 
+  /// Injects a cached GCJ-02 location into the native blue-dot renderer.
+  Future<void> updateLocationData(LatLng latLng, {required int mapId}) {
+    return channel(mapId).invokeMethod<void>(
+      'map#updateLocationData',
+      <String, dynamic>{'latLng': latLng.toJson()},
+    );
+  }
+
   Future<PoiSearchResult> searchPoi(
     PoiSearchQuery query, {
     required int mapId,

@@ -341,6 +341,23 @@
         [weakSelf.mapView setCameraUpdateDict:call.arguments];
         result(nil);
     }];
+    [self.channel addMethodName:@"map#updateLocationData" withHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
+        id value = call.arguments[@"latLng"];
+        if (![value isKindOfClass:[NSArray class]] || [value count] != 2
+            || ![value[0] isKindOfClass:[NSNumber class]]
+            || ![value[1] isKindOfClass:[NSNumber class]]) {
+            result([FlutterError errorWithCode:@"invalid_location" message:@"Expected latLng as [latitude, longitude]." details:nil]);
+            return;
+        }
+        CLLocationDegrees latitude = [value[0] doubleValue];
+        CLLocationDegrees longitude = [value[1] doubleValue];
+        if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+            result([FlutterError errorWithCode:@"invalid_location" message:@"Latitude or longitude is out of range." details:nil]);
+            return;
+        }
+        [weakSelf.mapView setCurrentLocation:CLLocationCoordinate2DMake(latitude, longitude)];
+        result(nil);
+    }];
     [self.channel addMethodName:@"map#takeSnapshot" withHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
         [weakSelf.mapView takeSnapshotInRect:weakSelf.mapView.frame withCompletionBlock:^(UIImage *resultImage, NSInteger state) {
             if (state == 1 && resultImage) {

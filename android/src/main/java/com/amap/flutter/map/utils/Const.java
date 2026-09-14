@@ -22,6 +22,7 @@ public class Const {
     public static final String METHOD_MAP_TO_SCREEN_COORDINATE = "map#toScreenCoordinate";
     public static final String METHOD_MAP_FROM_SCREEN_COORDINATE = "map#fromScreenCoordinate";
     public static final String METHOD_MAP_GET_VISIBLE_MAP_BOUNDS = "map#getVisibleMapBounds";
+    public static final String METHOD_MAP_UPDATE_LOCATION_DATA = "map#updateLocationData";
     public static final String METHOD_POI_SEARCH = "poi#search";
 
     public static final String METHOD_SET_TERRAIN_ENABLE = "#setTerrainEnable";
@@ -38,6 +39,7 @@ public class Const {
             METHOD_MAP_TO_SCREEN_COORDINATE,
             METHOD_MAP_FROM_SCREEN_COORDINATE,
             METHOD_MAP_GET_VISIBLE_MAP_BOUNDS,
+            METHOD_MAP_UPDATE_LOCATION_DATA,
             METHOD_POI_SEARCH
     };
 

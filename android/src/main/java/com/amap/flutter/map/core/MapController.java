@@ -149,6 +149,20 @@ public class MapController
                 visibleBounds.add(ConvertUtil.latLngToList(visibleRegion.latLngBounds.northeast));
                 result.success(visibleBounds);
                 break;
+            case Const.METHOD_MAP_UPDATE_LOCATION_DATA:
+                try {
+                    final LatLng location = ConvertUtil.toLatLng(call.argument("latLng"));
+                    if (location.latitude < -90 || location.latitude > 90
+                            || location.longitude < -180 || location.longitude > 180) {
+                        result.error("invalid_location", "Latitude or longitude is out of range.", null);
+                        break;
+                    }
+                    amap.setCurrentLocation(location);
+                    result.success(null);
+                } catch (RuntimeException exception) {
+                    result.error("invalid_location", "Expected latLng as [latitude, longitude].", null);
+                }
+                break;
             default:
                 LogUtil.w(CLASS_NAME, "onMethodCall not find methodId:" + call.method);
                 break;

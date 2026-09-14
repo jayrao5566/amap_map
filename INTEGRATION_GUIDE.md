@@ -111,6 +111,14 @@ AMapWidget(
 
 `none`（默认）只显示定位蓝点；`follow` 持续居中当前位置；`followWithHeading` 在居中基础上按行驶朝向旋转地图。iOS 原生 SDK 会在用户拖动地图或业务主动调用相机控制后退出跟随模式；需要恢复时，重新设置相同的 `trackingMode`。
 
+如果需要在真实定位返回前显示上次缓存位置，可在地图创建后调用：
+
+```dart
+await controller.updateLocationData(const LatLng(31.2304, 121.4737));
+```
+
+通常在 `onMapCreated` 中读取业务侧持久化的上次坐标后调用。坐标必须是高德 GCJ-02，且 `myLocationStyleOptions.enabled` 必须为 `true`。该调用只刷新原生蓝点，不触发 `onLocationChanged`；高德真实定位回调到达后会覆盖缓存位置。
+
 ## 4. Key 和合规初始化
 
 先在高德开放平台创建 Android 与 iOS Key。Android Key 应匹配宿主应用的包名和签名证书，iOS Key 应匹配 Bundle Identifier。
